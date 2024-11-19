@@ -8,16 +8,20 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         TaskService taskService = new TaskService();
         FileStorage fileStorage = new FileStorage();
 
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 System.out.println("\n=====================================");
-                System.out.println("           2ToDo Liste");
+                System.out.println("           ToDo Liste");
                 System.out.println("=====================================");
                 System.out.println("1. Aufgabe hinzufügen");
                 System.out.println("2. Aufgaben anzeigen");
@@ -46,8 +50,17 @@ public class Main {
                         System.out.print("Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
                         int priority = scanner.nextInt();
                         scanner.nextLine(); // Eingabepuffer leeren
-                        System.out.print("Fälligkeitsdatum (YYYY-MM-DD): ");
-                        LocalDate dueDate = LocalDate.parse(scanner.nextLine());
+
+                        LocalDate dueDate = null;
+                        while (dueDate == null) {
+                            System.out.print("Fälligkeitsdatum (TT.MM.JJJJ): ");
+                            String dateInput = scanner.nextLine();
+                            try {
+                                dueDate = LocalDate.parse(dateInput, dateFormatter);
+                            } catch (DateTimeParseException e) {
+                                System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
+                            }
+                        }
 
                         Task task = new Task(title, description, category, priority, dueDate);
                         taskService.addTask(task);
@@ -87,8 +100,17 @@ public class Main {
                             System.out.print("Neue Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
                             int newPriority = scanner.nextInt();
                             scanner.nextLine();
-                            System.out.print("Neues Fälligkeitsdatum (YYYY-MM-DD): ");
-                            LocalDate newDueDate = LocalDate.parse(scanner.nextLine());
+
+                            LocalDate newDueDate = null;
+                            while (newDueDate == null) {
+                                System.out.print("Neues Fälligkeitsdatum (TT.MM.JJJJ): ");
+                                String dateInput = scanner.nextLine();
+                                try {
+                                    newDueDate = LocalDate.parse(dateInput, dateFormatter);
+                                } catch (DateTimeParseException e) {
+                                    System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
+                                }
+                            }
 
                             Task updatedTask = new Task(newTitle, newDescription, newCategory, newPriority, newDueDate);
                             taskService.updateTask(updateIndex, updatedTask);
