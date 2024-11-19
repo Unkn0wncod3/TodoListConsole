@@ -1,25 +1,26 @@
 package com.todo;
 
+import com.todo.logging.Logger;
 import com.todo.model.Task;
 import com.todo.service.TaskService;
 import com.todo.storage.FileStorage;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         TaskService taskService = new TaskService();
         FileStorage fileStorage = new FileStorage();
-
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
+                Logger.log("Programm gestartet.");
                 System.out.println("\n=====================================");
                 System.out.println("           ToDo Liste");
                 System.out.println("=====================================");
@@ -34,7 +35,7 @@ public class Main {
                 System.out.print("Wähle eine Option: ");
 
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // Eingabepuffer leeren
+                scanner.nextLine();
 
                 System.out.println("-------------------------------------");
 
@@ -49,7 +50,7 @@ public class Main {
                         String category = scanner.nextLine();
                         System.out.print("Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
                         int priority = scanner.nextInt();
-                        scanner.nextLine(); // Eingabepuffer leeren
+                        scanner.nextLine();
 
                         LocalDate dueDate = null;
                         while (dueDate == null) {
@@ -64,7 +65,7 @@ public class Main {
 
                         Task task = new Task(title, description, category, priority, dueDate);
                         taskService.addTask(task);
-
+                        Logger.log("Aufgabe hinzugefügt: " + task);
                         System.out.println("Aufgabe erfolgreich hinzugefügt!");
                         break;
 
@@ -79,18 +80,20 @@ public class Main {
                                 System.out.println("-------------------------------------");
                             }
                         }
+                        Logger.log("Aufgaben angezeigt: " + taskService.getAllTasks().size() + " Aufgaben");
                         break;
 
                     case 3:
                         System.out.print("Aufgaben-Index zum Aktualisieren: ");
                         int updateIndex = scanner.nextInt() - 1;
-                        scanner.nextLine(); // Eingabepuffer leeren
+                        scanner.nextLine();
 
                         if (updateIndex >= 0 && updateIndex < taskService.getAllTasks().size()) {
-                            System.out.println("Aktuelle Aufgabe: ");
-                            System.out.println(taskService.getAllTasks().get(updateIndex));
-                            System.out.println("Neue Daten eingeben:");
+                            Task oldTask = taskService.getAllTasks().get(updateIndex);
 
+                            System.out.println("Aktuelle Aufgabe: ");
+                            System.out.println(oldTask);
+                            System.out.println("Neue Daten eingeben:");
                             System.out.print("Neuer Titel: ");
                             String newTitle = scanner.nextLine();
                             System.out.print("Neue Beschreibung: ");
@@ -114,7 +117,7 @@ public class Main {
 
                             Task updatedTask = new Task(newTitle, newDescription, newCategory, newPriority, newDueDate);
                             taskService.updateTask(updateIndex, updatedTask);
-
+                            Logger.log("Aufgabe aktualisiert: ALT: " + oldTask + " NEU: " + updatedTask);
                             System.out.println("Aufgabe erfolgreich aktualisiert!");
                         } else {
                             System.out.println("Ungültiger Index.");
@@ -126,7 +129,9 @@ public class Main {
                         int deleteIndex = scanner.nextInt() - 1;
 
                         if (deleteIndex >= 0 && deleteIndex < taskService.getAllTasks().size()) {
+                            Task deletedTask = taskService.getAllTasks().get(deleteIndex);
                             taskService.deleteTask(deleteIndex);
+                            Logger.log("Aufgabe gelöscht: " + deletedTask);
                             System.out.println("Aufgabe erfolgreich gelöscht!");
                         } else {
                             System.out.println("Ungültiger Index.");
@@ -135,17 +140,19 @@ public class Main {
 
                     case 5:
                         fileStorage.saveTasks(taskService.getAllTasks());
+                        Logger.log("Aufgaben gespeichert: " + taskService.getAllTasks().size() + " Aufgaben");
                         System.out.println("Daten erfolgreich gespeichert!");
                         break;
+
                     case 6:
                         List<Task> loadedTasks = fileStorage.loadTasks();
                         taskService.setTasks(loadedTasks);
+                        Logger.log("Aufgaben geladen: " + loadedTasks.size() + " Aufgaben");
                         System.out.println("Daten erfolgreich geladen!");
                         break;
-                    case 7:
-                        fileStorage.saveTasks(taskService.getAllTasks());
-                        System.out.println("Daten erfolgreich gespeichert!");
 
+                    case 7:
+                        Logger.log("Programm beendet.");
                         System.out.println("Beenden...");
                         System.out.println("=====================================");
                         return;
@@ -153,7 +160,6 @@ public class Main {
                     default:
                         System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }
-
                 System.out.println("-------------------------------------");
             }
         }

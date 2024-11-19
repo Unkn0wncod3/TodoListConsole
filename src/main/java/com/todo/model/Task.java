@@ -1,6 +1,7 @@
 package com.todo.model;
 
 import java.time.LocalDate;
+import com.todo.logging.Logger;
 
 public class Task {
     private String title;
@@ -19,8 +20,10 @@ public class Task {
 
     @Override
     public String toString() {
-        return String.format("Title: %s, Description: %s, Category: %s, Priority: %d, DueDate: %s",
+        String taskString = String.format("Title: %s, Description: %s, Category: %s, Priority: %d, DueDate: %s",
                 title, description, category, priority, dueDate);
+        Logger.log("Task: toString aufgerufen für: " + taskString);
+        return taskString;
     }
 
     public String getTitle() {

@@ -6,6 +6,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import com.todo.logging.Logger;
 
 public class FileStorage {
     private static final String FILE_PATH = "todo-data.txt";
@@ -18,8 +19,12 @@ public class FileStorage {
                         task.getDescription(),
                         task.getCategory(),
                         task.getPriority(),
-                        task.getDueDate().toString()));
+                        task.getDueDate()));
             }
+            Logger.log("FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: " + tasks.size());
+        } catch (IOException e) {
+            Logger.log("FileStorage: Fehler beim Speichern der Aufgaben: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -35,11 +40,13 @@ public class FileStorage {
                     String category = parts[2];
                     int priority = Integer.parseInt(parts[3]);
                     LocalDate dueDate = LocalDate.parse(parts[4]);
-
-                    Task task = new Task(title, description, category, priority, dueDate);
-                    tasks.add(task);
+                    tasks.add(new Task(title, description, category, priority, dueDate));
                 }
             }
+            Logger.log("FileStorage: Aufgaben erfolgreich geladen. Anzahl: " + tasks.size());
+        } catch (IOException e) {
+            Logger.log("FileStorage: Fehler beim Laden der Aufgaben: " + e.getMessage());
+            throw e;
         }
         return tasks;
     }

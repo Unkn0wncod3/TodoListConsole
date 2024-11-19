@@ -1,0 +1,47 @@
+[2024-11-19 17:03:47] Aufgaben angezeigt: 0 Aufgaben
+[2024-11-19 17:03:52] Aufgaben geladen: 1 Aufgaben
+[2024-11-19 17:03:53] Aufgaben angezeigt: 1 Aufgaben
+[2024-11-19 17:05:25] Programm beendet und Aufgaben gespeichert.
+[2024-11-19 17:09:25] Aufgaben angezeigt: 0 Aufgaben
+[2024-11-19 17:09:29] FileStorage: Aufgaben erfolgreich geladen. Anzahl: 1
+[2024-11-19 17:09:29] TaskService: Aufgabenliste neu gesetzt. Anzahl Aufgaben: 1
+[2024-11-19 17:09:29] Aufgaben geladen: 1 Aufgaben
+[2024-11-19 17:09:30] Task: toString aufgerufen für: Title: test, Description: 234, Category: nix, Priority: 1, DueDate: 1111-11-11
+[2024-11-19 17:09:30] Aufgaben angezeigt: 1 Aufgaben
+[2024-11-19 17:09:43] Task: toString aufgerufen für: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:09:43] TaskService: Aufgabe hinzugefügt: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:09:43] Task: toString aufgerufen für: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:09:43] Aufgabe hinzugefügt: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:09:45] Task: toString aufgerufen für: Title: test, Description: 234, Category: nix, Priority: 1, DueDate: 1111-11-11
+[2024-11-19 17:09:45] Task: toString aufgerufen für: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:09:45] Aufgaben angezeigt: 2 Aufgaben
+[2024-11-19 17:09:49] FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: 2
+[2024-11-19 17:09:49] Aufgaben gespeichert: 2 Aufgaben
+[2024-11-19 17:09:52] FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: 2
+[2024-11-19 17:09:52] Programm beendet und Aufgaben gespeichert.
+[2024-11-19 17:10:56] Programm gestartet.
+[2024-11-19 17:10:58] Aufgaben angezeigt: 0 Aufgaben
+[2024-11-19 17:10:58] Programm gestartet.
+[2024-11-19 17:11:03] FileStorage: Aufgaben erfolgreich geladen. Anzahl: 2
+[2024-11-19 17:11:03] TaskService: Aufgabenliste neu gesetzt. Anzahl Aufgaben: 2
+[2024-11-19 17:11:03] Aufgaben geladen: 2 Aufgaben
+[2024-11-19 17:11:03] Programm gestartet.
+[2024-11-19 17:11:04] Task: toString aufgerufen für: Title: test, Description: 234, Category: nix, Priority: 1, DueDate: 1111-11-11
+[2024-11-19 17:11:04] Task: toString aufgerufen für: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:11:04] Aufgaben angezeigt: 2 Aufgaben
+[2024-11-19 17:11:04] Programm gestartet.
+[2024-11-19 17:11:07] FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: 2
+[2024-11-19 17:11:07] Programm beendet und Aufgaben gespeichert.
+[2024-11-19 17:11:14] Programm gestartet.
+[2024-11-19 17:11:15] Aufgaben angezeigt: 0 Aufgaben
+[2024-11-19 17:11:15] Programm gestartet.
+[2024-11-19 17:11:17] FileStorage: Aufgaben erfolgreich geladen. Anzahl: 2
+[2024-11-19 17:11:17] TaskService: Aufgabenliste neu gesetzt. Anzahl Aufgaben: 2
+[2024-11-19 17:11:17] Aufgaben geladen: 2 Aufgaben
+[2024-11-19 17:11:17] Programm gestartet.
+[2024-11-19 17:11:18] Task: toString aufgerufen für: Title: test, Description: 234, Category: nix, Priority: 1, DueDate: 1111-11-11
+[2024-11-19 17:11:18] Task: toString aufgerufen für: Title: tester, Description: asasd, Category: sdfsdf, Priority: 1, DueDate: 2222-11-11
+[2024-11-19 17:11:18] Aufgaben angezeigt: 2 Aufgaben
+[2024-11-19 17:11:18] Programm gestartet.
+[2024-11-19 17:11:20] FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: 2
+[2024-11-19 17:11:20] Programm beendet und Aufgaben gespeichert.
