@@ -1,43 +1,32 @@
-# Gradle spezifisch
-.gradle/
-build/
+# Maven spezifische Dateien
+target/
 
-# Eclipse spezifisch
-.classpath
-.project
-.settings/
-
-# IntelliJ IDEA spezifisch
+# IDE spezifische Dateien
 .idea/
-*.iml
-out/
 
-# VS Code spezifisch
-.vscode/
-
-# Java spezifisch
-*.class
-*.log
-*.jar
-*.war
-*.ear
-
-# Betriebssystem spezifisch
+# Betriebssystem spezifische Dateien
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
-
-# Temp-Dateien
-*.tmp
 *.swp
-*.swo
+*~
+
+# Sicherungsdateien
 *.bak
+*.tmp
+*.old
+*.orig
 
-# Spezifische Konfigurationsdateien
-*.properties
+# Lokale Konfigurationsdateien
 *.env
+.todo-data.txt
 
-# Testberichte
-/test-results/
+# Testspezifische Ausgaben
+test-output/
+surefire-reports/
+
+# Temporäre Dateien
+*.tmp
+*.out
+
+# Paket-Manager spezifische Dateien
+.mvn/
