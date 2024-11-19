@@ -1,0 +1,43 @@
+# Gradle spezifisch
+.gradle/
+build/
+
+# Eclipse spezifisch
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA spezifisch
+.idea/
+*.iml
+out/
+
+# VS Code spezifisch
+.vscode/
+
+# Java spezifisch
+*.class
+*.log
+*.jar
+*.war
+*.ear
+
+# Betriebssystem spezifisch
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp-Dateien
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Spezifische Konfigurationsdateien
+*.properties
+*.env
+
+# Testberichte
+/test-results/
