@@ -26,4 +26,9 @@ public class TaskService {
             tasks.remove(index);
         }
     }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks.clear();
+        this.tasks.addAll(tasks);
+    }
 }
