@@ -30,3 +30,5 @@ surefire-reports/
 
 # Paket-Manager spezifische Dateien
 .mvn/
+
+*.txt

@@ -54,12 +54,18 @@ public class Main {
 
                         LocalDate dueDate = null;
                         while (dueDate == null) {
-                            System.out.print("Fälligkeitsdatum (TT.MM.JJJJ): ");
+                            System.out.print("Fälligkeitsdatum (TT.MM.JJJJ) [Leer für morgen]: ");
                             String dateInput = scanner.nextLine();
-                            try {
-                                dueDate = LocalDate.parse(dateInput, dateFormatter);
-                            } catch (DateTimeParseException e) {
-                                System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
+                            if (dateInput.isBlank()) {
+                                dueDate = LocalDate.now().plusDays(1);
+                                System.out.println("Kein Datum eingegeben. Fälligkeitsdatum auf "
+                                        + dueDate.format(dateFormatter) + " gesetzt.");
+                            } else {
+                                try {
+                                    dueDate = LocalDate.parse(dateInput, dateFormatter);
+                                } catch (DateTimeParseException e) {
+                                    System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
+                                }
                             }
                         }
 

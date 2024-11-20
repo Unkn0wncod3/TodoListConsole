@@ -1,2 +1,0 @@
-test;234;nix;1;1111-11-11
-tester;asasd;sdfsdf;1;2222-11-11
