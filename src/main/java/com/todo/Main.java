@@ -16,7 +16,7 @@ import java.util.Scanner;
 
 public class Main {
     private static final String PASSWORD_FILE = "password.txt";
-    private static String password = "default";
+    private static String password = "1";
 
     public static void main(String[] args) throws IOException {
         loadPassword();
@@ -30,6 +30,13 @@ public class Main {
             if (!authenticateUser(scanner)) {
                 return;
             }
+
+            // Preload Tasks
+            List<Task> preLoadedTasks = fileStorage.loadTasks();
+            taskService.setTasks(preLoadedTasks);
+            Logger.log("Aufgaben geladen: " + preLoadedTasks.size() + " Aufgaben");
+            System.out.println("Daten erfolgreich geladen!");
+
             while (true) {
                 System.out.println("\n=====================================");
                 System.out.println("           ToDo Liste");
@@ -44,10 +51,19 @@ public class Main {
                 System.out.println("8. Aufgaben suchen und filtern");
                 System.out.println("9. Beenden");
                 System.out.println("=====================================");
-                System.out.print("Wähle eine Option: ");
 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
+                int choice = -1;
+                while (choice == -1) {
+                    System.out.print("Wähle eine Option: ");
+                    String input = scanner.nextLine();
+
+                    try {
+                        choice = Integer.parseInt(input);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.");
+                        Logger.log("Ungültige Eingabe: " + input);
+                    }
+                }
 
                 System.out.println("-------------------------------------");
 
