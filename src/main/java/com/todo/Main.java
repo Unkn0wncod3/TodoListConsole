@@ -92,17 +92,24 @@ public class Main {
                             if (dateInput.isBlank()) {
                                 dueDate = LocalDate.now().plusDays(1);
                                 System.out.println("Kein Datum eingegeben. Fälligkeitsdatum auf "
-                                        + dueDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + " gesetzt.");
+                                        + dueDate.format(dateFormatter) + " gesetzt.");
                             } else {
                                 try {
-                                    dueDate = LocalDate.parse(dateInput, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                                    dueDate = LocalDate.parse(dateInput, dateFormatter);
                                 } catch (DateTimeParseException e) {
                                     System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
                                 }
                             }
                         }
 
-                        Task task = new Task(title, description, category, priority, dueDate);
+                        String recurrenceType = validateInput(scanner,
+                                "Wiederholung (daily, weekly, monthly oder leer für keine Wiederholung): ",
+                                input -> input.isBlank() || input.equalsIgnoreCase("daily") ||
+                                        input.equalsIgnoreCase("weekly") || input.equalsIgnoreCase("monthly"),
+                                "Ungültige Eingabe. Bitte daily, weekly, monthly oder leer eingeben.");
+
+                        Task task = new Task(title, description, category, priority, dueDate,
+                                recurrenceType.isBlank() ? null : recurrenceType.toLowerCase());
                         taskService.addTask(task);
                         Logger.log("Aufgabe hinzugefügt: " + task);
                         System.out.println("Aufgabe erfolgreich hinzugefügt!");
@@ -115,7 +122,11 @@ public class Main {
                             System.out.println("Keine Aufgaben vorhanden.");
                         } else {
                             for (int i = 0; i < taskService.getAllTasks().size(); i++) {
-                                System.out.println((i + 1) + ". " + taskService.getAllTasks().get(i));
+                                Task showTask = taskService.getAllTasks().get(i);
+                                LocalDate nextDueDate = showTask.calculateNextDueDate();
+                                System.out
+                                        .println((i + 1) + ". " + showTask + " (Nächste Fälligkeit: " + nextDueDate
+                                                + ")");
                                 System.out.println("-------------------------------------");
                             }
                         }
@@ -133,29 +144,42 @@ public class Main {
                             System.out.println("Aktuelle Aufgabe: ");
                             System.out.println(oldTask);
                             System.out.println("Neue Daten eingeben:");
-                            System.out.print("Neuer Titel: ");
-                            String newTitle = scanner.nextLine();
-                            System.out.print("Neue Beschreibung: ");
-                            String newDescription = scanner.nextLine();
-                            System.out.print("Neue Kategorie: ");
-                            String newCategory = scanner.nextLine();
-                            System.out.print("Neue Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
-                            int newPriority = scanner.nextInt();
-                            scanner.nextLine();
+
+                            String newTitle = validateInput(scanner, "Neuer Titel: ", input -> !input.trim().isEmpty(),
+                                    "Titel darf nicht leer sein.");
+                            String newDescription = validateInput(scanner, "Neue Beschreibung: ",
+                                    input -> !input.trim().isEmpty(), "Beschreibung darf nicht leer sein.");
+                            String newCategory = validateInput(scanner, "Neue Kategorie: ",
+                                    input -> !input.trim().isEmpty(), "Kategorie darf nicht leer sein.");
+                            String newPriorityInput = validateInput(scanner,
+                                    "Neue Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ",
+                                    input -> input.matches("[1-3]"),
+                                    "Ungültige Priorität. Bitte geben Sie eine Zahl zwischen 1 und 3 ein.");
+                            int newPriority = Integer.parseInt(newPriorityInput);
 
                             LocalDate newDueDate = null;
                             while (newDueDate == null) {
-                                System.out.print("Neues Fälligkeitsdatum (TT.MM.JJJJ): ");
-                                String dateInput = scanner.nextLine();
+                                String dateInput = validateInput(scanner, "Neues Fälligkeitsdatum (TT.MM.JJJJ): ",
+                                        input -> input.matches("\\d{2}\\.\\d{2}\\.\\d{4}"),
+                                        "Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
                                 try {
                                     newDueDate = LocalDate.parse(dateInput, dateFormatter);
                                 } catch (DateTimeParseException e) {
-                                    System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
+                                    System.out.println("Ungültiges Datum. Bitte erneut versuchen.");
                                 }
                             }
 
-                            Task updatedTask = new Task(newTitle, newDescription, newCategory, newPriority, newDueDate);
+                            String newRecurrenceType = validateInput(scanner,
+                                    "Neue Wiederholung (daily, weekly, monthly oder leer für keine Wiederholung): ",
+                                    input -> input.isBlank() || input.equalsIgnoreCase("daily") ||
+                                            input.equalsIgnoreCase("weekly") || input.equalsIgnoreCase("monthly"),
+                                    "Ungültige Eingabe. Bitte daily, weekly, monthly oder leer eingeben.");
+
+                            Task updatedTask = new Task(newTitle, newDescription, newCategory, newPriority, newDueDate,
+                                    newRecurrenceType.isBlank() ? null : newRecurrenceType.toLowerCase());
+
                             taskService.updateTask(updateIndex, updatedTask);
+
                             Logger.log("Aufgabe aktualisiert: ALT: " + oldTask + " NEU: " + updatedTask);
                             System.out.println("Aufgabe erfolgreich aktualisiert!");
                         } else {

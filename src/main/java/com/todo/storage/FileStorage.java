@@ -14,12 +14,13 @@ public class FileStorage {
     public void saveTasks(List<Task> tasks) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (Task task : tasks) {
-                writer.write(String.format("%s;%s;%s;%d;%s%n",
+                writer.write(String.format("%s;%s;%s;%d;%s;%s%n",
                         task.getTitle(),
                         task.getDescription(),
                         task.getCategory(),
                         task.getPriority(),
-                        task.getDueDate()));
+                        task.getDueDate(),
+                        task.getRecurrenceType() != null ? task.getRecurrenceType() : ""));
             }
             Logger.log("FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: " + tasks.size());
         } catch (IOException e) {
@@ -34,19 +35,24 @@ public class FileStorage {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                if (parts.length == 5) {
+                if (parts.length >= 5) {
                     String title = parts[0];
                     String description = parts[1];
                     String category = parts[2];
                     int priority = Integer.parseInt(parts[3]);
                     LocalDate dueDate = LocalDate.parse(parts[4]);
-                    tasks.add(new Task(title, description, category, priority, dueDate));
+                    String recurrenceType = parts.length > 5 && !parts[5].isBlank() ? parts[5].toLowerCase() : null;
+
+                    tasks.add(new Task(title, description, category, priority, dueDate, recurrenceType));
                 }
             }
             Logger.log("FileStorage: Aufgaben erfolgreich geladen. Anzahl: " + tasks.size());
         } catch (IOException e) {
             Logger.log("FileStorage: Fehler beim Laden der Aufgaben: " + e.getMessage());
             throw e;
+        } catch (Exception e) {
+            Logger.log("FileStorage: Fehler beim Verarbeiten der Aufgaben: " + e.getMessage());
+            throw new IOException("Fehler beim Verarbeiten der Datei", e);
         }
         return tasks;
     }

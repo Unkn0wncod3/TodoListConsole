@@ -8,20 +8,47 @@ public class Task {
     private String category;
     private int priority;
     private LocalDate dueDate;
+    private String recurrenceType; // "daily", "weekly", "monthly" or null for non-recurring
 
-    public Task(String title, String description, String category, int priority, LocalDate dueDate) {
+    public Task(String title, String description, String category, int priority, LocalDate dueDate,
+            String recurrenceType) {
         this.title = title;
         this.description = description;
         this.category = category;
         this.priority = priority;
         this.dueDate = dueDate;
+        this.recurrenceType = recurrenceType;
+    }
+
+    public String getRecurrenceType() {
+        return recurrenceType;
+    }
+
+    public void setRecurrenceType(String recurrenceType) {
+        this.recurrenceType = recurrenceType;
+    }
+
+    public LocalDate calculateNextDueDate() {
+        if (recurrenceType == null)
+            return dueDate;
+
+        switch (recurrenceType.toLowerCase()) {
+            case "daily":
+                return dueDate.plusDays(1);
+            case "weekly":
+                return dueDate.plusWeeks(1);
+            case "monthly":
+                return dueDate.plusMonths(1);
+            default:
+                return dueDate;
+        }
     }
 
     @Override
     public String toString() {
-        String taskString = String.format("Title: %s, Description: %s, Category: %s, Priority: %d, DueDate: %s",
-                title, description, category, priority, dueDate);
-        return taskString;
+        String recurrenceInfo = (recurrenceType != null) ? " (Wiederkehrend: " + recurrenceType + ")" : "";
+        return String.format("Title: %s, Description: %s, Category: %s, Priority: %d, DueDate: %s%s",
+                title, description, category, priority, dueDate, recurrenceInfo);
     }
 
     public String getTitle() {
