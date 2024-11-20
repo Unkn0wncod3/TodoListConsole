@@ -49,7 +49,7 @@ public class Main {
                 switch (choice) {
                     case 1 -> addTask(scanner, taskService, fileStorage, dateFormatter);
                     case 2 -> displayTasks(taskService);
-                    case 3 -> updateTask(scanner, taskService, dateFormatter);
+                    case 3 -> updateTask(scanner, taskService, fileStorage, dateFormatter);
                     case 4 -> deleteTask(scanner, taskService);
                     case 5 -> saveAllTasks(fileStorage, taskService);
                     case 6 -> reloadTasks(fileStorage, taskService);
@@ -62,9 +62,8 @@ public class Main {
                     }
                     case 10 -> displayStatistics(taskService);
                     case 11 -> markTaskAsCompleted(scanner, taskService);
-                    case 12 -> archiveTask(scanner, taskService, fileStorage);
-                    case 13 -> displayArchivedTasks(taskService);
-                    case 14 -> restoreArchivedTask(scanner, taskService, fileStorage);
+                    case 12 -> displayArchivedTasks(taskService);
+                    case 13 -> restoreArchivedTask(scanner, taskService, fileStorage);
 
                     default -> System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }
@@ -89,9 +88,8 @@ public class Main {
         System.out.println("9. Beenden");
         System.out.println("10. Aufgabenstatistik anzeigen");
         System.out.println("11. Aufgabe als abgeschlossen markieren");
-        System.out.println("12. Aufgabe archivieren");
-        System.out.println("13. Archiv anzeigen");
-        System.out.println("14. Archivierte Aufgabe wiederherstellen");
+        System.out.println("12. Archiv anzeigen");
+        System.out.println("13. Archivierte Aufgabe wiederherstellen");
 
         System.out.println("=====================================");
     }
@@ -161,7 +159,8 @@ public class Main {
         Logger.log("Aufgaben angezeigt: " + tasks.size() + " Aufgaben");
     }
 
-    private static void updateTask(Scanner scanner, TaskService taskService, DateTimeFormatter dateFormatter) {
+    private static void updateTask(Scanner scanner, TaskService taskService, FileStorage fileStorage,
+            DateTimeFormatter dateFormatter) {
         System.out.print("Aufgaben-Index zum Aktualisieren: ");
         int updateIndex = scanner.nextInt() - 1;
         scanner.nextLine();
@@ -183,7 +182,8 @@ public class Main {
                 System.out.println("7. Status");
                 System.out.println("8. Tag hinzufügen");
                 System.out.println("9. Tag entfernen");
-                System.out.println("10. Fertig");
+                System.out.println("10. Archivieren");
+                System.out.println("11. Fertig");
                 System.out.print("Wählen Sie eine Option: ");
 
                 int choice = scanner.nextInt();
@@ -225,8 +225,7 @@ public class Main {
                         String newRecurrenceType = validateInput(scanner,
                                 "Neue Wiederholung (daily, weekly, monthly oder leer für keine Wiederholung): ",
                                 input -> input.isBlank() || input.equalsIgnoreCase("daily")
-                                        || input.equalsIgnoreCase("weekly")
-                                        || input.equalsIgnoreCase("monthly"),
+                                        || input.equalsIgnoreCase("weekly") || input.equalsIgnoreCase("monthly"),
                                 "Ungültige Eingabe.");
                         oldTask.setRecurrenceType(newRecurrenceType.isBlank() ? null : newRecurrenceType.toLowerCase());
                         System.out.println("Wiederholung erfolgreich aktualisiert.");
@@ -258,6 +257,17 @@ public class Main {
                         }
                     }
                     case 10 -> {
+                        taskService.archiveTask(updateIndex);
+                        try {
+                            fileStorage.saveAllArchivedTasks(taskService.getArchivedTasks());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println("Aufgabe erfolgreich archiviert.");
+                        Logger.log("Aufgabe archiviert: " + oldTask);
+                        continueEditing = false; // Exit after archiving
+                    }
+                    case 11 -> {
                         continueEditing = false;
                         System.out.println("Bearbeitung abgeschlossen.");
                     }
@@ -265,8 +275,10 @@ public class Main {
                 }
             }
 
-            taskService.updateTask(updateIndex, oldTask);
-            Logger.log("Aufgabe aktualisiert: " + oldTask);
+            if (!tasks.isEmpty()) {
+                taskService.updateTask(updateIndex, oldTask);
+                Logger.log("Aufgabe aktualisiert: " + oldTask);
+            }
         } else {
             System.out.println("Ungültiger Index.");
         }
@@ -513,21 +525,6 @@ public class Main {
                 return input;
             }
             System.out.println(errorMessage);
-        }
-    }
-
-    private static void archiveTask(Scanner scanner, TaskService taskService, FileStorage fileStorage)
-            throws IOException {
-        System.out.print("Aufgaben-Index zum Archivieren: ");
-        int index = scanner.nextInt() - 1;
-        scanner.nextLine();
-
-        Task archivedTask = taskService.archiveTask(index);
-        if (archivedTask != null) {
-            fileStorage.archiveTask(archivedTask);
-            System.out.println("Aufgabe erfolgreich archiviert.");
-        } else {
-            System.out.println("Ungültiger Index.");
         }
     }
 
