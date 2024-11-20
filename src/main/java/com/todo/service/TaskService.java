@@ -1,8 +1,14 @@
 package com.todo.service;
 
 import com.todo.model.Task;
+
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.todo.logging.Logger;
 
 public class TaskService {
@@ -77,4 +83,105 @@ public class TaskService {
         }
         return result;
     }
+
+    public long countCompletedTasksForCurrentWeek() {
+        LocalDate startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        LocalDate endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
+
+        return tasks.stream()
+                .filter(task -> task.isCompleted() &&
+                        (task.getDueDate().isAfter(startOfWeek.minusDays(1)) &&
+                                task.getDueDate().isBefore(endOfWeek.plusDays(1))))
+                .count();
+    }
+
+    public long countCompletedTasksForCurrentMonth() {
+        LocalDate startOfMonth = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate endOfMonth = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
+
+        return tasks.stream()
+                .filter(task -> task.isCompleted() &&
+                        (task.getDueDate().isAfter(startOfMonth.minusDays(1)) &&
+                                task.getDueDate().isBefore(endOfMonth.plusDays(1))))
+                .count();
+    }
+
+    public long countTotalCompletedTasks() {
+        return tasks.stream().filter(Task::isCompleted).count();
+    }
+
+    public long countTotalPendingTasks() {
+        return tasks.stream().filter(task -> !task.isCompleted()).count();
+    }
+
+    public Map<String, Long> countTasksByCategory() {
+        return tasks.stream().collect(Collectors.groupingBy(Task::getCategory, Collectors.counting()));
+    }
+
+    public Map<Integer, Long> countTasksByPriority() {
+        return tasks.stream().collect(Collectors.groupingBy(Task::getPriority, Collectors.counting()));
+    }
+
+    public Map<LocalDate, Long> countTasksByDueDate() {
+        return tasks.stream().collect(Collectors.groupingBy(Task::getDueDate, Collectors.counting()));
+    }
+
+    public List<Task> filterByCompletionStatus(boolean isCompleted) {
+        return tasks.stream()
+                .filter(task -> task.isCompleted() == isCompleted)
+                .collect(Collectors.toList());
+    }
+
+    public List<Task> filterByRecurrenceType(String recurrenceType) {
+        return tasks.stream()
+                .filter(task -> recurrenceType.equalsIgnoreCase(task.getRecurrenceType()))
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Long> countRecurringTasksByType() {
+        return tasks.stream()
+                .filter(task -> task.getRecurrenceType() != null)
+                .collect(Collectors.groupingBy(Task::getRecurrenceType, Collectors.counting()));
+    }
+
+    public void updateRecurringTasks() {
+        for (Task task : tasks) {
+            if (!task.isCompleted() && task.getRecurrenceType() != null) {
+                LocalDate nextDueDate = task.calculateNextDueDate();
+                if (nextDueDate.isAfter(LocalDate.now())) {
+                    task.setDueDate(nextDueDate);
+                    Logger.log("TaskService: Fälligkeitsdatum aktualisiert für Aufgabe: " + task);
+                }
+            }
+        }
+    }
+
+    public void generateRecurringTasks() {
+        List<Task> newTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (!task.isCompleted() && task.getRecurrenceType() != null) {
+                LocalDate nextDueDate = task.calculateNextDueDate();
+                if (nextDueDate.isAfter(task.getDueDate())) {
+                    Task newTask = new Task(
+                            task.getTitle(),
+                            task.getDescription(),
+                            task.getCategory(),
+                            task.getPriority(),
+                            nextDueDate,
+                            task.getRecurrenceType(),
+                            false);
+                    newTasks.add(newTask);
+                }
+            }
+        }
+        tasks.addAll(newTasks);
+        Logger.log("TaskService: Wiederkehrende Aufgaben generiert. Neue Aufgaben: " + newTasks.size());
+    }
+
+    public long countOverdueTasks() {
+        return tasks.stream()
+                .filter(task -> !task.isCompleted() && task.getDueDate().isBefore(LocalDate.now()))
+                .count();
+    }
+
 }
