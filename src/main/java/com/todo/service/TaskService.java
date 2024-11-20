@@ -243,4 +243,11 @@ public class TaskService {
         return null;
     }
 
+    public void addTasks(List<Task> tasksToAdd) {
+        if (tasksToAdd != null) {
+            tasks.addAll(tasksToAdd);
+            Logger.log("TaskService: " + tasksToAdd.size() + " Aufgaben hinzugefügt.");
+        }
+    }
+
 }

@@ -564,7 +564,9 @@ public class Main {
         System.out.println("2. Archivierte Aufgabe wiederherstellen");
         System.out.println("3. Aufgaben speichern");
         System.out.println("4. Aufgaben laden");
-        System.out.println("5. Zurück");
+        System.out.println("5. Aufgaben als CSV exportieren");
+        System.out.println("6. Aufgaben aus CSV importieren");
+        System.out.println("7. Zurück");
         System.out.println("=====================================");
 
         int choice = getValidatedChoice(scanner);
@@ -574,8 +576,38 @@ public class Main {
             case 2 -> restoreArchivedTask(scanner, taskService, fileStorage);
             case 3 -> saveAllTasks(fileStorage, taskService);
             case 4 -> reloadTasks(fileStorage, taskService);
-            case 5 -> System.out.println("Zurück zum Hauptmenü.");
+            case 5 -> exportTasksToCSV(scanner, taskService, fileStorage);
+            case 6 -> importTasksFromCSV(scanner, taskService, fileStorage);
+            case 7 -> System.out.println("Zurück zum Hauptmenü.");
             default -> System.out.println("Ungültige Auswahl.");
+        }
+    }
+
+    private static void exportTasksToCSV(Scanner scanner, TaskService taskService, FileStorage fileStorage) {
+        System.out.print("Pfad für die Exportdatei (z. B. export.csv): ");
+        String filePath = scanner.nextLine();
+
+        try {
+            fileStorage.exportTasksToCSV(taskService.getAllTasks(), filePath);
+            System.out.println("Aufgaben erfolgreich in CSV exportiert: " + filePath);
+            Logger.log("CSV-Export erfolgreich: " + filePath);
+        } catch (IOException e) {
+            System.out.println("Fehler beim Exportieren der Aufgaben: " + e.getMessage());
+            Logger.log("CSV-Export fehlgeschlagen: " + e.getMessage());
+        }
+    }
+
+    private static void importTasksFromCSV(Scanner scanner, TaskService taskService, FileStorage fileStorage) {
+        System.out.print("Pfad der CSV-Datei für den Import: ");
+        String filePath = scanner.nextLine();
+        try {
+            List<Task> importedTasks = fileStorage.importTasksFromCSV(filePath);
+            taskService.addTasks(importedTasks);
+            System.out.println("Aufgaben erfolgreich aus CSV importiert: " + importedTasks.size() + " Aufgaben.");
+            Logger.log("Main: Aufgaben erfolgreich aus CSV importiert.");
+        } catch (IOException e) {
+            System.err.println("Fehler beim Importieren aus CSV: " + e.getMessage());
+            Logger.log("Main: Fehler beim Importieren aus CSV: " + e.getMessage());
         }
     }
 

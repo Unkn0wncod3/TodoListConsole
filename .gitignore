@@ -32,3 +32,4 @@ surefire-reports/
 .mvn/
 
 *.txt
+*.csv
