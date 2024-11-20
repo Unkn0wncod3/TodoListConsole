@@ -169,7 +169,7 @@ public class TaskService {
                             task.getPriority(),
                             nextDueDate,
                             task.getRecurrenceType(),
-                            false);
+                            false, null);
                     newTasks.add(newTask);
                 }
             }
@@ -182,6 +182,31 @@ public class TaskService {
         return tasks.stream()
                 .filter(task -> !task.isCompleted() && task.getDueDate().isBefore(LocalDate.now()))
                 .count();
+    }
+
+    public List<Task> filterByTag(String tag) {
+        return tasks.stream()
+                .filter(task -> task.getTags() != null && task.getTags().contains(tag))
+                .collect(Collectors.toList());
+    }
+
+    public void addTagToTask(int index, String tag) {
+        if (index >= 0 && index < tasks.size()) {
+            Task task = tasks.get(index);
+            if (task.getTags() == null) {
+                task.setTags(new ArrayList<>());
+            }
+            task.getTags().add(tag);
+            Logger.log("Tag hinzugefügt: " + tag + " für Aufgabe: " + task);
+        } else {
+            throw new IndexOutOfBoundsException("Ungültiger Aufgaben-Index: " + index);
+        }
+    }
+
+    public void removeTagFromTask(int index, String tag) {
+        if (index >= 0 && index < tasks.size()) {
+            tasks.get(index).removeTag(tag);
+        }
     }
 
 }

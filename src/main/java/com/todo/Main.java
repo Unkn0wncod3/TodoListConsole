@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -56,6 +57,10 @@ public class Main {
                     }
                     case 10 -> displayStatistics(taskService);
                     case 11 -> markTaskAsCompleted(scanner, taskService);
+                    case 12 -> addTagToTask(scanner, taskService);
+                    case 13 -> removeTagFromTask(scanner, taskService);
+                    case 14 -> filterTasksByTag(scanner, taskService);
+
                     default -> System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }
 
@@ -79,6 +84,10 @@ public class Main {
         System.out.println("9. Beenden");
         System.out.println("10. Aufgabenstatistik anzeigen");
         System.out.println("11. Aufgabe als abgeschlossen markieren");
+        System.out.println("12. Tag zu Aufgabe hinzufügen");
+        System.out.println("13. Tag von Aufgabe entfernen");
+        System.out.println("14. Aufgaben nach Tag filtern");
+
         System.out.println("=====================================");
     }
 
@@ -117,13 +126,14 @@ public class Main {
                         || input.equalsIgnoreCase("monthly"),
                 "Ungültige Eingabe.");
 
-        boolean completed = Boolean.parseBoolean(validateInput(scanner,
-                "Status (true für abgeschlossen, false für offen): ",
-                input -> input.equalsIgnoreCase("true") || input.equalsIgnoreCase("false"),
-                "Ungültiger Status. Bitte true oder false eingeben."));
+        String statusInput = validateInput(scanner,
+                "Neuer Status (true für abgeschlossen, false für offen, leer für false): ",
+                input -> input.isBlank() || input.equalsIgnoreCase("true") || input.equalsIgnoreCase("false"),
+                "Ungültiger Status. Bitte true, false oder leer eingeben.");
+        boolean completed = statusInput.isBlank() ? false : Boolean.parseBoolean(statusInput);
 
         Task task = new Task(title, description, category, priority, dueDate,
-                recurrenceType.isBlank() ? null : recurrenceType.toLowerCase(), completed);
+                recurrenceType.isBlank() ? null : recurrenceType.toLowerCase(), completed, new ArrayList<>());
         taskService.addTask(task);
         fileStorage.saveTask(task);
         Logger.log("Aufgabe hinzugefügt: " + task);
@@ -181,7 +191,8 @@ public class Main {
             boolean newCompleted = statusInputCompleted.isBlank() ? false : Boolean.parseBoolean(statusInputCompleted);
 
             Task updatedTask = new Task(newTitle, newDescription, newCategory, newPriority, newDueDate,
-                    newRecurrenceType.isBlank() ? null : newRecurrenceType.toLowerCase(), newCompleted);
+                    newRecurrenceType.isBlank() ? null : newRecurrenceType.toLowerCase(), newCompleted,
+                    new ArrayList<>());
             taskService.updateTask(updateIndex, updatedTask);
 
             Logger.log("Aufgabe aktualisiert: ALT: " + oldTask + " NEU: " + updatedTask);
@@ -428,4 +439,42 @@ public class Main {
             System.out.println(errorMessage);
         }
     }
+
+    private static void addTagToTask(Scanner scanner, TaskService taskService) {
+        try {
+            System.out.print("Aufgaben-Index für Tag: ");
+            int index = scanner.nextInt() - 1;
+            scanner.nextLine();
+            System.out.print("Tag hinzufügen: ");
+            String tag = scanner.nextLine();
+            taskService.addTagToTask(index, tag);
+            System.out.println("Tag erfolgreich hinzugefügt.");
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Ungültiger Index. Bitte erneut versuchen.");
+        } catch (Exception e) {
+            System.out.println("Fehler beim Hinzufügen des Tags: " + e.getMessage());
+        }
+    }
+
+    private static void removeTagFromTask(Scanner scanner, TaskService taskService) {
+        System.out.print("Aufgaben-Index für Tag: ");
+        int index = scanner.nextInt() - 1;
+        scanner.nextLine();
+        System.out.print("Tag entfernen: ");
+        String tag = scanner.nextLine();
+        taskService.removeTagFromTask(index, tag);
+        System.out.println("Tag erfolgreich entfernt.");
+    }
+
+    private static void filterTasksByTag(Scanner scanner, TaskService taskService) {
+        System.out.print("Tag zum Filtern: ");
+        String tag = scanner.nextLine();
+        List<Task> filteredTasks = taskService.filterByTag(tag);
+        if (filteredTasks.isEmpty()) {
+            System.out.println("Keine Aufgaben gefunden.");
+        } else {
+            filteredTasks.forEach(System.out::println);
+        }
+    }
+
 }

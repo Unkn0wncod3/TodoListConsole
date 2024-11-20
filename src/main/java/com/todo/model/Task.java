@@ -1,6 +1,8 @@
 package com.todo.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Task {
@@ -11,9 +13,10 @@ public class Task {
     private LocalDate dueDate;
     private String recurrenceType;
     private boolean completed;
+    private List<String> tags;
 
     public Task(String title, String description, String category, int priority, LocalDate dueDate,
-            String recurrenceType, boolean completed) {
+            String recurrenceType, boolean completed, List<String> tags) {
         this.title = title;
         this.description = description;
         this.category = category;
@@ -21,6 +24,25 @@ public class Task {
         this.dueDate = dueDate;
         this.recurrenceType = recurrenceType;
         this.completed = completed;
+        this.tags = tags != null ? tags : new ArrayList<>();
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(String tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+        }
+    }
+
+    public void removeTag(String tag) {
+        tags.remove(tag);
     }
 
     public boolean isCompleted() {
@@ -119,7 +141,8 @@ public class Task {
     public String toString() {
         String recurrenceInfo = (recurrenceType != null) ? " (Wiederkehrend: " + recurrenceType + ")" : "";
         String status = completed ? "Erledigt" : "Offen";
-        return String.format("Title: %s, Description: %s, Category: %s, Priority: %d, DueDate: %s%s, Status: %s",
-                title, description, category, priority, dueDate, recurrenceInfo, status);
+        String tagsInfo = !tags.isEmpty() ? " Tags: " + tags : "";
+        return String.format("Title: %s, Description: %s, Category: %s, Priority: %d, DueDate: %s%s, Status: %s%s",
+                title, description, category, priority, dueDate, recurrenceInfo, status, tagsInfo);
     }
 }

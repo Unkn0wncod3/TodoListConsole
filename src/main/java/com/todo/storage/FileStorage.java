@@ -5,6 +5,7 @@ import com.todo.model.Task;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import com.todo.logging.Logger;
 
@@ -41,7 +42,7 @@ public class FileStorage {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                if (parts.length >= 7) {
+                if (parts.length >= 8) {
                     String title = parts[0];
                     String description = parts[1];
                     String category = parts[2];
@@ -49,8 +50,11 @@ public class FileStorage {
                     LocalDate dueDate = LocalDate.parse(parts[4]);
                     String recurrenceType = parts[5].isBlank() ? null : parts[5];
                     boolean completed = Boolean.parseBoolean(parts[6]);
+                    List<String> tags = parts[7].isBlank() ? new ArrayList<>()
+                            : new ArrayList<>(Arrays.asList(parts[7].split(",")));
 
-                    tasks.add(new Task(title, description, category, priority, dueDate, recurrenceType, completed));
+                    tasks.add(
+                            new Task(title, description, category, priority, dueDate, recurrenceType, completed, tags));
                 }
             }
             Logger.log("FileStorage: Aufgaben erfolgreich geladen. Anzahl: " + tasks.size());
@@ -65,13 +69,19 @@ public class FileStorage {
     }
 
     private String formatTask(Task task) {
-        return String.format("%s;%s;%s;%d;%s;%s;%b",
+        List<String> tags = task.getTags();
+        if (tags == null || tags.isEmpty()) {
+            tags = List.of("#default");
+        }
+        return String.format("%s;%s;%s;%d;%s;%s;%b;%s",
                 task.getTitle(),
                 task.getDescription(),
                 task.getCategory(),
                 task.getPriority(),
                 task.getDueDate(),
                 task.getRecurrenceType() != null ? task.getRecurrenceType() : "",
-                task.isCompleted());
+                task.isCompleted(),
+                String.join(",", tags));
     }
+
 }
