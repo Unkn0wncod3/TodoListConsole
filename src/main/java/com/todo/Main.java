@@ -50,20 +50,18 @@ public class Main {
                     case 1 -> addTask(scanner, taskService, fileStorage, dateFormatter);
                     case 2 -> displayTasks(taskService);
                     case 3 -> updateTask(scanner, taskService, fileStorage, dateFormatter);
-                    case 4 -> deleteTask(scanner, taskService);
-                    case 5 -> saveAllTasks(fileStorage, taskService);
-                    case 6 -> reloadTasks(fileStorage, taskService);
-                    case 7 -> changePassword(scanner);
-                    case 8 -> filterTasks(scanner, taskService);
-                    case 9 -> {
+                    case 4 -> deleteTask(scanner, taskService, fileStorage);
+                    case 5 -> displayStatistics(taskService);
+                    case 6 -> markTaskAsCompleted(scanner, taskService);
+                    case 7 -> displayArchivedTasks(taskService);
+                    case 8 -> restoreArchivedTask(scanner, taskService, fileStorage);
+                    case 9 -> filterTasks(scanner, taskService);
+                    case 10 -> handleExtras(scanner, taskService, fileStorage);
+                    case 99 -> {
                         Logger.log("Programm beendet.");
                         System.out.println("Beenden...");
                         return;
                     }
-                    case 10 -> displayStatistics(taskService);
-                    case 11 -> markTaskAsCompleted(scanner, taskService);
-                    case 12 -> displayArchivedTasks(taskService);
-                    case 13 -> restoreArchivedTask(scanner, taskService, fileStorage);
 
                     default -> System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }
@@ -81,16 +79,13 @@ public class Main {
         System.out.println("2. Aufgaben anzeigen");
         System.out.println("3. Aufgabe aktualisieren");
         System.out.println("4. Aufgabe löschen");
-        System.out.println("5. Aufgaben speichern");
-        System.out.println("6. Aufgaben laden");
-        System.out.println("7. Passwort ändern");
-        System.out.println("8. Aufgaben suchen und filtern");
-        System.out.println("9. Beenden");
-        System.out.println("10. Aufgabenstatistik anzeigen");
-        System.out.println("11. Aufgabe als abgeschlossen markieren");
-        System.out.println("12. Archiv anzeigen");
-        System.out.println("13. Archivierte Aufgabe wiederherstellen");
-
+        System.out.println("5. Aufgabenstatistik anzeigen");
+        System.out.println("6. Aufgabe als abgeschlossen markieren");
+        System.out.println("7. Archiv anzeigen");
+        System.out.println("8. Archivierte Aufgabe wiederherstellen");
+        System.out.println("9. Aufgaben suchen und filtern");
+        System.out.println("10. Extra-Funktionen");
+        System.out.println("99. Beenden");
         System.out.println("=====================================");
     }
 
@@ -138,7 +133,7 @@ public class Main {
         Task task = new Task(title, description, category, priority, dueDate,
                 recurrenceType.isBlank() ? null : recurrenceType.toLowerCase(), completed, new ArrayList<>());
         taskService.addTask(task);
-        fileStorage.saveTask(task);
+        fileStorage.saveAllTasks(taskService.getAllTasks());
         Logger.log("Aufgabe hinzugefügt: " + task);
         System.out.println("Aufgabe erfolgreich hinzugefügt!");
     }
@@ -160,7 +155,7 @@ public class Main {
     }
 
     private static void updateTask(Scanner scanner, TaskService taskService, FileStorage fileStorage,
-            DateTimeFormatter dateFormatter) {
+            DateTimeFormatter dateFormatter) throws IOException {
         System.out.print("Aufgaben-Index zum Aktualisieren: ");
         int updateIndex = scanner.nextInt() - 1;
         scanner.nextLine();
@@ -277,8 +272,10 @@ public class Main {
 
             if (!tasks.isEmpty()) {
                 taskService.updateTask(updateIndex, oldTask);
+                fileStorage.saveAllTasks(taskService.getAllTasks());
                 Logger.log("Aufgabe aktualisiert: " + oldTask);
             }
+
         } else {
             System.out.println("Ungültiger Index.");
         }
@@ -304,13 +301,15 @@ public class Main {
         return dueDate;
     }
 
-    private static void deleteTask(Scanner scanner, TaskService taskService) {
+    private static void deleteTask(Scanner scanner, TaskService taskService, FileStorage fileStorage)
+            throws IOException {
         System.out.print("Aufgaben-Index zum Löschen: ");
         int deleteIndex = scanner.nextInt() - 1;
         scanner.nextLine();
         if (deleteIndex >= 0 && deleteIndex < taskService.getAllTasks().size()) {
             Task deletedTask = taskService.getAllTasks().get(deleteIndex);
             taskService.deleteTask(deleteIndex);
+            fileStorage.saveAllTasks(taskService.getAllTasks());
             Logger.log("Aufgabe gelöscht: " + deletedTask);
             System.out.println("Aufgabe erfolgreich gelöscht!");
         } else {
@@ -548,9 +547,35 @@ public class Main {
 
         Task restoredTask = taskService.restoreTask(index, fileStorage);
         if (restoredTask != null) {
+            fileStorage.saveAllArchivedTasks(taskService.getArchivedTasks());
+            fileStorage.saveAllTasks(taskService.getAllTasks());
             System.out.println("Aufgabe erfolgreich wiederhergestellt: " + restoredTask.getTitle());
         } else {
             System.out.println("Ungültiger Index.");
+        }
+    }
+
+    private static void handleExtras(Scanner scanner, TaskService taskService, FileStorage fileStorage)
+            throws IOException {
+        System.out.println("\n=====================================");
+        System.out.println("           Extra-Funktionen");
+        System.out.println("=====================================");
+        System.out.println("1. Passwort ändern");
+        System.out.println("2. Archivierte Aufgabe wiederherstellen");
+        System.out.println("3. Aufgaben speichern");
+        System.out.println("4. Aufgaben laden");
+        System.out.println("5. Zurück");
+        System.out.println("=====================================");
+
+        int choice = getValidatedChoice(scanner);
+
+        switch (choice) {
+            case 1 -> changePassword(scanner);
+            case 2 -> restoreArchivedTask(scanner, taskService, fileStorage);
+            case 3 -> saveAllTasks(fileStorage, taskService);
+            case 4 -> reloadTasks(fileStorage, taskService);
+            case 5 -> System.out.println("Zurück zum Hauptmenü.");
+            default -> System.out.println("Ungültige Auswahl.");
         }
     }
 
