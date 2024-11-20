@@ -12,8 +12,22 @@ public class FileStorage {
     private static final String FILE_PATH = "todo-data.txt";
 
     public void saveTasks(List<Task> tasks) throws IOException {
+        List<Task> existingTasks = new ArrayList<>();
+
+        if (new File(FILE_PATH).exists()) {
+            try {
+                existingTasks = loadTasks();
+                Logger.log("FileStorage: Vorhandene Aufgaben erfolgreich geladen. Anzahl: " + existingTasks.size());
+            } catch (IOException e) {
+                Logger.log("FileStorage: Fehler beim Laden der bestehenden Aufgaben: " + e.getMessage());
+            }
+        }
+
+        List<Task> mergedTasks = new ArrayList<>(existingTasks);
+        mergedTasks.addAll(tasks);
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            for (Task task : tasks) {
+            for (Task task : mergedTasks) {
                 writer.write(String.format("%s;%s;%s;%d;%s;%s%n",
                         task.getTitle(),
                         task.getDescription(),
@@ -22,7 +36,7 @@ public class FileStorage {
                         task.getDueDate(),
                         task.getRecurrenceType() != null ? task.getRecurrenceType() : ""));
             }
-            Logger.log("FileStorage: Aufgaben erfolgreich gespeichert. Anzahl: " + tasks.size());
+            Logger.log("FileStorage: Aufgaben erfolgreich gespeichert. Gesamtanzahl: " + mergedTasks.size());
         } catch (IOException e) {
             Logger.log("FileStorage: Fehler beim Speichern der Aufgaben: " + e.getMessage());
             throw e;
