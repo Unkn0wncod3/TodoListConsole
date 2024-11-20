@@ -70,27 +70,32 @@ public class Main {
                 switch (choice) {
                     case 1:
                         System.out.println("Neue Aufgabe hinzufügen:");
-                        System.out.print("Titel: ");
-                        String title = scanner.nextLine();
-                        System.out.print("Beschreibung: ");
-                        String description = scanner.nextLine();
-                        System.out.print("Kategorie: ");
-                        String category = scanner.nextLine();
-                        System.out.print("Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
-                        int priority = scanner.nextInt();
-                        scanner.nextLine();
+                        String title = validateInput(scanner, "Titel: ", input -> !input.trim().isEmpty(),
+                                "Titel darf nicht leer sein.");
+                        String description = validateInput(scanner, "Beschreibung: ", input -> !input.trim().isEmpty(),
+                                "Beschreibung darf nicht leer sein.");
+                        String category = validateInput(scanner, "Kategorie: ", input -> !input.trim().isEmpty(),
+                                "Kategorie darf nicht leer sein.");
+
+                        String priorityInput = validateInput(scanner, "Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ",
+                                input -> input.matches("[1-3]"),
+                                "Ungültige Priorität. Bitte geben Sie eine Zahl zwischen 1 und 3 ein.");
+                        int priority = Integer.parseInt(priorityInput);
 
                         LocalDate dueDate = null;
                         while (dueDate == null) {
-                            System.out.print("Fälligkeitsdatum (TT.MM.JJJJ) [Leer für morgen]: ");
-                            String dateInput = scanner.nextLine();
+                            String dateInput = validateInput(scanner,
+                                    "Fälligkeitsdatum (TT.MM.JJJJ) [Leer für morgen]: ",
+                                    input -> input.isBlank() || input.matches("\\d{2}\\.\\d{2}\\.\\d{4}"),
+                                    "Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden oder leer lassen.");
+
                             if (dateInput.isBlank()) {
                                 dueDate = LocalDate.now().plusDays(1);
                                 System.out.println("Kein Datum eingegeben. Fälligkeitsdatum auf "
-                                        + dueDate.format(dateFormatter) + " gesetzt.");
+                                        + dueDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + " gesetzt.");
                             } else {
                                 try {
-                                    dueDate = LocalDate.parse(dateInput, dateFormatter);
+                                    dueDate = LocalDate.parse(dateInput, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
                                 } catch (DateTimeParseException e) {
                                     System.out.println("Ungültiges Datum. Bitte das Format TT.MM.JJJJ verwenden.");
                                 }
@@ -314,4 +319,18 @@ public class Main {
         System.out.println("Passwort erfolgreich geändert.");
         Logger.log("Passwort erfolgreich geändert.");
     }
+
+    private static String validateInput(Scanner scanner, String prompt, java.util.function.Predicate<String> validator,
+            String errorMessage) {
+        String input;
+        while (true) {
+            System.out.print(prompt);
+            input = scanner.nextLine();
+            if (validator.test(input)) {
+                return input;
+            }
+            System.out.println(errorMessage);
+        }
+    }
+
 }
