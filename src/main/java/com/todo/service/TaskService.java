@@ -1,7 +1,9 @@
 package com.todo.service;
 
 import com.todo.model.Task;
+import com.todo.storage.FileStorage;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import com.todo.logging.Logger;
 
 public class TaskService {
     private List<Task> tasks = new ArrayList<>();
+    private List<Task> archivedTasks = new ArrayList<>();
 
     public void addTask(Task task) {
         tasks.add(task);
@@ -207,6 +210,37 @@ public class TaskService {
         if (index >= 0 && index < tasks.size()) {
             tasks.get(index).removeTag(tag);
         }
+    }
+
+    public Task archiveTask(int index) {
+        if (index >= 0 && index < tasks.size()) {
+            Task taskToArchive = tasks.remove(index);
+            archivedTasks.add(taskToArchive);
+            Logger.log("TaskService: Aufgabe archiviert: " + taskToArchive);
+            return taskToArchive;
+        }
+        return null;
+    }
+
+    public List<Task> getArchivedTasks() {
+        return archivedTasks;
+    }
+
+    public void setArchivedTasks(List<Task> archivedTasks) {
+        this.archivedTasks.clear();
+        this.archivedTasks.addAll(archivedTasks);
+        Logger.log("TaskService: Archivierte Aufgaben gesetzt. Anzahl: " + archivedTasks.size());
+    }
+
+    public Task restoreTask(int index, FileStorage fileStorage) throws IOException {
+        if (index >= 0 && index < archivedTasks.size()) {
+            Task taskToRestore = archivedTasks.remove(index);
+            tasks.add(taskToRestore);
+            fileStorage.saveAllArchivedTasks(archivedTasks);
+            Logger.log("TaskService: Aufgabe wiederhergestellt: " + taskToRestore);
+            return taskToRestore;
+        }
+        return null;
     }
 
 }

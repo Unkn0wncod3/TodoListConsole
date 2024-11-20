@@ -35,6 +35,11 @@ public class Main {
 
             reloadTasks(fileStorage, taskService);
 
+            List<Task> archivedTasks = fileStorage.loadArchivedTasks();
+            taskService.setArchivedTasks(archivedTasks);
+            Logger.log("Archivierte Aufgaben geladen: " + archivedTasks.size() + " Aufgaben.");
+            System.out.println("Archivierte Aufgaben erfolgreich geladen!");
+
             while (true) {
                 displayMenu();
                 int choice = getValidatedChoice(scanner);
@@ -57,9 +62,9 @@ public class Main {
                     }
                     case 10 -> displayStatistics(taskService);
                     case 11 -> markTaskAsCompleted(scanner, taskService);
-                    case 12 -> addTagToTask(scanner, taskService);
-                    case 13 -> removeTagFromTask(scanner, taskService);
-                    case 14 -> filterTasksByTag(scanner, taskService);
+                    case 12 -> archiveTask(scanner, taskService, fileStorage);
+                    case 13 -> displayArchivedTasks(taskService);
+                    case 14 -> restoreArchivedTask(scanner, taskService, fileStorage);
 
                     default -> System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }
@@ -84,9 +89,9 @@ public class Main {
         System.out.println("9. Beenden");
         System.out.println("10. Aufgabenstatistik anzeigen");
         System.out.println("11. Aufgabe als abgeschlossen markieren");
-        System.out.println("12. Tag zu Aufgabe hinzufügen");
-        System.out.println("13. Tag von Aufgabe entfernen");
-        System.out.println("14. Aufgaben nach Tag filtern");
+        System.out.println("12. Aufgabe archivieren");
+        System.out.println("13. Archiv anzeigen");
+        System.out.println("14. Archivierte Aufgabe wiederherstellen");
 
         System.out.println("=====================================");
     }
@@ -166,37 +171,102 @@ public class Main {
             Task oldTask = tasks.get(updateIndex);
             System.out.println("Aktuelle Aufgabe: " + oldTask);
 
-            String newTitle = validateInput(scanner, "Neuer Titel: ", input -> !input.trim().isEmpty(),
-                    "Titel darf nicht leer sein.");
-            String newDescription = validateInput(scanner, "Neue Beschreibung: ", input -> !input.trim().isEmpty(),
-                    "Beschreibung darf nicht leer sein.");
-            String newCategory = validateInput(scanner, "Neue Kategorie: ", input -> !input.trim().isEmpty(),
-                    "Kategorie darf nicht leer sein.");
-            int newPriority = Integer
-                    .parseInt(validateInput(scanner, "Neue Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ",
-                            input -> input.matches("[1-3]"), "Ungültige Priorität."));
+            boolean continueEditing = true;
+            while (continueEditing) {
+                System.out.println("\nWelche Eigenschaft möchten Sie ändern?");
+                System.out.println("1. Titel");
+                System.out.println("2. Beschreibung");
+                System.out.println("3. Kategorie");
+                System.out.println("4. Priorität");
+                System.out.println("5. Fälligkeitsdatum");
+                System.out.println("6. Wiederholung");
+                System.out.println("7. Status");
+                System.out.println("8. Tag hinzufügen");
+                System.out.println("9. Tag entfernen");
+                System.out.println("10. Fertig");
+                System.out.print("Wählen Sie eine Option: ");
 
-            LocalDate newDueDate = getValidatedDueDate(scanner, dateFormatter);
+                int choice = scanner.nextInt();
+                scanner.nextLine();
 
-            String newRecurrenceType = validateInput(scanner,
-                    "Neue Wiederholung (daily, weekly, monthly oder leer für keine Wiederholung): ",
-                    input -> input.isBlank() || input.equalsIgnoreCase("daily") || input.equalsIgnoreCase("weekly")
-                            || input.equalsIgnoreCase("monthly"),
-                    "Ungültige Eingabe.");
+                switch (choice) {
+                    case 1 -> {
+                        String newTitle = validateInput(scanner, "Neuer Titel: ", input -> !input.trim().isEmpty(),
+                                "Titel darf nicht leer sein.");
+                        oldTask.setTitle(newTitle);
+                        System.out.println("Titel erfolgreich aktualisiert.");
+                    }
+                    case 2 -> {
+                        String newDescription = validateInput(scanner, "Neue Beschreibung: ",
+                                input -> !input.trim().isEmpty(), "Beschreibung darf nicht leer sein.");
+                        oldTask.setDescription(newDescription);
+                        System.out.println("Beschreibung erfolgreich aktualisiert.");
+                    }
+                    case 3 -> {
+                        String newCategory = validateInput(scanner, "Neue Kategorie: ",
+                                input -> !input.trim().isEmpty(),
+                                "Kategorie darf nicht leer sein.");
+                        oldTask.setCategory(newCategory);
+                        System.out.println("Kategorie erfolgreich aktualisiert.");
+                    }
+                    case 4 -> {
+                        int newPriority = Integer.parseInt(validateInput(scanner,
+                                "Neue Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ",
+                                input -> input.matches("[1-3]"), "Ungültige Priorität."));
+                        oldTask.setPriority(newPriority);
+                        System.out.println("Priorität erfolgreich aktualisiert.");
+                    }
+                    case 5 -> {
+                        LocalDate newDueDate = getValidatedDueDate(scanner, dateFormatter);
+                        oldTask.setDueDate(newDueDate);
+                        System.out.println("Fälligkeitsdatum erfolgreich aktualisiert.");
+                    }
+                    case 6 -> {
+                        String newRecurrenceType = validateInput(scanner,
+                                "Neue Wiederholung (daily, weekly, monthly oder leer für keine Wiederholung): ",
+                                input -> input.isBlank() || input.equalsIgnoreCase("daily")
+                                        || input.equalsIgnoreCase("weekly")
+                                        || input.equalsIgnoreCase("monthly"),
+                                "Ungültige Eingabe.");
+                        oldTask.setRecurrenceType(newRecurrenceType.isBlank() ? null : newRecurrenceType.toLowerCase());
+                        System.out.println("Wiederholung erfolgreich aktualisiert.");
+                    }
+                    case 7 -> {
+                        String statusInputCompleted = validateInput(scanner,
+                                "Neuer Status (true für abgeschlossen, false für offen, leer für false): ",
+                                input -> input.isBlank() || input.equalsIgnoreCase("true")
+                                        || input.equalsIgnoreCase("false"),
+                                "Ungültiger Status. Bitte true, false oder leer eingeben.");
+                        boolean newCompleted = statusInputCompleted.isBlank() ? false
+                                : Boolean.parseBoolean(statusInputCompleted);
+                        oldTask.setCompleted(newCompleted);
+                        System.out.println("Status erfolgreich aktualisiert.");
+                    }
+                    case 8 -> {
+                        System.out.print("Tag hinzufügen: ");
+                        String newTag = scanner.nextLine();
+                        oldTask.getTags().add(newTag);
+                        System.out.println("Tag erfolgreich hinzugefügt.");
+                    }
+                    case 9 -> {
+                        System.out.print("Tag entfernen: ");
+                        String tagToRemove = scanner.nextLine();
+                        if (oldTask.getTags().remove(tagToRemove)) {
+                            System.out.println("Tag erfolgreich entfernt.");
+                        } else {
+                            System.out.println("Tag nicht gefunden.");
+                        }
+                    }
+                    case 10 -> {
+                        continueEditing = false;
+                        System.out.println("Bearbeitung abgeschlossen.");
+                    }
+                    default -> System.out.println("Ungültige Auswahl.");
+                }
+            }
 
-            String statusInputCompleted = validateInput(scanner,
-                    "Neuer Status (true für abgeschlossen, false für offen, leer für false): ",
-                    input -> input.isBlank() || input.equalsIgnoreCase("true") || input.equalsIgnoreCase("false"),
-                    "Ungültiger Status. Bitte true, false oder leer eingeben.");
-            boolean newCompleted = statusInputCompleted.isBlank() ? false : Boolean.parseBoolean(statusInputCompleted);
-
-            Task updatedTask = new Task(newTitle, newDescription, newCategory, newPriority, newDueDate,
-                    newRecurrenceType.isBlank() ? null : newRecurrenceType.toLowerCase(), newCompleted,
-                    new ArrayList<>());
-            taskService.updateTask(updateIndex, updatedTask);
-
-            Logger.log("Aufgabe aktualisiert: ALT: " + oldTask + " NEU: " + updatedTask);
-            System.out.println("Aufgabe erfolgreich aktualisiert!");
+            taskService.updateTask(updateIndex, oldTask);
+            Logger.log("Aufgabe aktualisiert: " + oldTask);
         } else {
             System.out.println("Ungültiger Index.");
         }
@@ -255,6 +325,7 @@ public class Main {
         System.out.println("2. Nach Beschreibung suchen");
         System.out.println("3. Nach Kategorie filtern");
         System.out.println("4. Nach Priorität filtern");
+        System.out.println("5. Nach Tag filtern");
         System.out.print("Wähle eine Option: ");
         int filterChoice = scanner.nextInt();
         scanner.nextLine();
@@ -280,6 +351,11 @@ public class Main {
                 System.out.print("Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
                 int priorityFilter = scanner.nextInt();
                 filteredTasks = taskService.filterByPriority(priorityFilter);
+            }
+            case 5 -> {
+                System.out.print("Tag eingeben: ");
+                String tagFilter = scanner.nextLine();
+                filteredTasks = taskService.filterByTag(tagFilter);
             }
             default -> System.out.println("Ungültige Auswahl.");
         }
@@ -440,40 +516,44 @@ public class Main {
         }
     }
 
-    private static void addTagToTask(Scanner scanner, TaskService taskService) {
-        try {
-            System.out.print("Aufgaben-Index für Tag: ");
-            int index = scanner.nextInt() - 1;
-            scanner.nextLine();
-            System.out.print("Tag hinzufügen: ");
-            String tag = scanner.nextLine();
-            taskService.addTagToTask(index, tag);
-            System.out.println("Tag erfolgreich hinzugefügt.");
-        } catch (IndexOutOfBoundsException e) {
-            System.out.println("Ungültiger Index. Bitte erneut versuchen.");
-        } catch (Exception e) {
-            System.out.println("Fehler beim Hinzufügen des Tags: " + e.getMessage());
+    private static void archiveTask(Scanner scanner, TaskService taskService, FileStorage fileStorage)
+            throws IOException {
+        System.out.print("Aufgaben-Index zum Archivieren: ");
+        int index = scanner.nextInt() - 1;
+        scanner.nextLine();
+
+        Task archivedTask = taskService.archiveTask(index);
+        if (archivedTask != null) {
+            fileStorage.archiveTask(archivedTask);
+            System.out.println("Aufgabe erfolgreich archiviert.");
+        } else {
+            System.out.println("Ungültiger Index.");
         }
     }
 
-    private static void removeTagFromTask(Scanner scanner, TaskService taskService) {
-        System.out.print("Aufgaben-Index für Tag: ");
-        int index = scanner.nextInt() - 1;
-        scanner.nextLine();
-        System.out.print("Tag entfernen: ");
-        String tag = scanner.nextLine();
-        taskService.removeTagFromTask(index, tag);
-        System.out.println("Tag erfolgreich entfernt.");
+    private static void displayArchivedTasks(TaskService taskService) {
+        List<Task> archivedTasks = taskService.getArchivedTasks();
+        if (archivedTasks.isEmpty()) {
+            System.out.println("Keine archivierten Aufgaben vorhanden.");
+        } else {
+            System.out.println("Archivierte Aufgaben:");
+            for (int i = 0; i < archivedTasks.size(); i++) {
+                System.out.println((i + 1) + ". " + archivedTasks.get(i));
+            }
+        }
     }
 
-    private static void filterTasksByTag(Scanner scanner, TaskService taskService) {
-        System.out.print("Tag zum Filtern: ");
-        String tag = scanner.nextLine();
-        List<Task> filteredTasks = taskService.filterByTag(tag);
-        if (filteredTasks.isEmpty()) {
-            System.out.println("Keine Aufgaben gefunden.");
+    private static void restoreArchivedTask(Scanner scanner, TaskService taskService, FileStorage fileStorage)
+            throws IOException {
+        System.out.print("Archiv-Index zur Wiederherstellung: ");
+        int index = scanner.nextInt() - 1;
+        scanner.nextLine();
+
+        Task restoredTask = taskService.restoreTask(index, fileStorage);
+        if (restoredTask != null) {
+            System.out.println("Aufgabe erfolgreich wiederhergestellt: " + restoredTask.getTitle());
         } else {
-            filteredTasks.forEach(System.out::println);
+            System.out.println("Ungültiger Index.");
         }
     }
 

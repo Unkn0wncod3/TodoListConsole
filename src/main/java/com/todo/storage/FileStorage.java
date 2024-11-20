@@ -11,6 +11,7 @@ import com.todo.logging.Logger;
 
 public class FileStorage {
     private static final String FILE_PATH = "todo-data.txt";
+    private static final String ARCHIVE_PATH = "archive-data.txt";
 
     public void saveTask(Task task) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
@@ -82,6 +83,70 @@ public class FileStorage {
                 task.getRecurrenceType() != null ? task.getRecurrenceType() : "",
                 task.isCompleted(),
                 String.join(",", tags));
+    }
+
+    public void archiveTask(Task task) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVE_PATH, true))) {
+            writer.write(formatTask(task));
+            writer.newLine();
+            Logger.log("FileStorage: Aufgabe archiviert: " + task);
+        } catch (IOException e) {
+            Logger.log("FileStorage: Fehler beim Archivieren der Aufgabe: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<Task> loadArchivedTasks() throws IOException {
+        List<Task> archivedTasks = new ArrayList<>();
+        File archiveFile = new File("archive-data.txt");
+
+        if (!archiveFile.exists()) {
+            Logger.log("FileStorage: Keine archivierten Aufgaben gefunden.");
+            return archivedTasks; // Leere Liste zurückgeben, wenn die Datei nicht existiert
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(archiveFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length >= 8) {
+                    String title = parts[0];
+                    String description = parts[1];
+                    String category = parts[2];
+                    int priority = Integer.parseInt(parts[3]);
+                    LocalDate dueDate = LocalDate.parse(parts[4]);
+                    String recurrenceType = parts[5].isBlank() ? null : parts[5];
+                    boolean completed = Boolean.parseBoolean(parts[6]);
+                    List<String> tags = parts[7].isBlank() ? new ArrayList<>() : Arrays.asList(parts[7].split(","));
+
+                    archivedTasks.add(
+                            new Task(title, description, category, priority, dueDate, recurrenceType, completed, tags));
+                }
+            }
+            Logger.log("FileStorage: Archivierte Aufgaben erfolgreich geladen. Anzahl: " + archivedTasks.size());
+        } catch (IOException e) {
+            Logger.log("FileStorage: Fehler beim Laden archivierter Aufgaben: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            Logger.log("FileStorage: Fehler beim Verarbeiten archivierter Aufgaben: " + e.getMessage());
+            throw new IOException("Fehler beim Verarbeiten der Archivdatei", e);
+        }
+
+        return archivedTasks;
+    }
+
+    public void saveAllArchivedTasks(List<Task> archivedTasks) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVE_PATH))) {
+            for (Task task : archivedTasks) {
+                writer.write(formatTask(task));
+                writer.newLine();
+            }
+            Logger.log("FileStorage: Archivierte Aufgaben erfolgreich aktualisiert. Gesamtanzahl: "
+                    + archivedTasks.size());
+        } catch (IOException e) {
+            Logger.log("FileStorage: Fehler beim Aktualisieren archivierter Aufgaben: " + e.getMessage());
+            throw e;
+        }
     }
 
 }
