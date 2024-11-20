@@ -13,3 +13,7 @@ Eine einfache Konsolenanwendung zur Verwaltung von Aufgaben mit Protokollierung.
 3. **Anwendung starten:**
    ```bash
    mvn exec:java
+## Login
+Standardpasswort:
+````bash
+default
