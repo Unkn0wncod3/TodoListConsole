@@ -31,11 +31,16 @@ public class Main {
                 return;
             }
 
-            // Preload Tasks
-            List<Task> preLoadedTasks = fileStorage.loadTasks();
-            taskService.setTasks(preLoadedTasks);
-            Logger.log("Aufgaben geladen: " + preLoadedTasks.size() + " Aufgaben");
-            System.out.println("Daten erfolgreich geladen!");
+            if (Files.exists(Paths.get("todo-data.txt"))) {
+                // Preload Tasks
+                List<Task> preLoadedTasks = fileStorage.loadTasks();
+                taskService.setTasks(preLoadedTasks);
+                Logger.log("Aufgaben geladen: " + preLoadedTasks.size() + " Aufgaben");
+                System.out.println("Daten erfolgreich geladen!");
+            } else {
+                Logger.log("Keine vorhandene Datei gefunden. Keine Aufgaben geladen.");
+                System.out.println("Keine vorhandene Datei gefunden. Aufgaben wurden nicht geladen.");
+            }
 
             while (true) {
                 System.out.println("\n=====================================");
