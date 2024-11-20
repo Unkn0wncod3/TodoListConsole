@@ -31,6 +31,7 @@ public class Main {
                 System.out.println("5. Aufgaben speichern");
                 System.out.println("6. Aufgaben laden");
                 System.out.println("7. Beenden");
+                System.out.println("8. Aufgaben suchen und filtern");
                 System.out.println("=====================================");
                 System.out.print("Wähle eine Option: ");
 
@@ -162,7 +163,54 @@ public class Main {
                         System.out.println("Beenden...");
                         System.out.println("=====================================");
                         return;
+                    case 8:
+                        System.out.println("Suche und Filter - Wählen Sie ein Kriterium:");
+                        System.out.println("1. Nach Titel suchen");
+                        System.out.println("2. Nach Beschreibung suchen");
+                        System.out.println("3. Nach Kategorie filtern");
+                        System.out.println("4. Nach Priorität filtern");
+                        System.out.print("Wähle eine Option: ");
+                        int filterChoice = scanner.nextInt();
+                        scanner.nextLine();
 
+                        List<Task> filteredTasks = null;
+                        switch (filterChoice) {
+                            case 1:
+                                System.out.print("Suchbegriff im Titel: ");
+                                String titleSearch = scanner.nextLine();
+                                filteredTasks = taskService.searchByTitle(titleSearch);
+                                break;
+                            case 2:
+                                System.out.print("Suchbegriff in der Beschreibung: ");
+                                String descriptionSearch = scanner.nextLine();
+                                filteredTasks = taskService.searchByDescription(descriptionSearch);
+                                break;
+                            case 3:
+                                System.out.print("Genaue Kategorie: ");
+                                String categoryFilter = scanner.nextLine();
+                                filteredTasks = taskService.filterByCategory(categoryFilter);
+                                break;
+                            case 4:
+                                System.out.print("Priorität (1 = hoch, 2 = mittel, 3 = niedrig): ");
+                                int priorityFilter = scanner.nextInt();
+                                filteredTasks = taskService.filterByPriority(priorityFilter);
+                                break;
+                            default:
+                                System.out.println("Ungültige Auswahl.");
+                        }
+
+                        if (filteredTasks != null && !filteredTasks.isEmpty()) {
+                            System.out.println("Gefundene Aufgaben:");
+                            for (Task singleTask : filteredTasks) {
+                                System.out.println(singleTask);
+                            }
+                        } else {
+                            System.out.println("Keine Aufgaben gefunden.");
+                        }
+
+                        Logger.log("Aufgaben gefiltert: " + (filteredTasks != null ? filteredTasks.size() : 0)
+                                + " Ergebnisse");
+                        break;
                     default:
                         System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }

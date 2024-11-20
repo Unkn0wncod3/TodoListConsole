@@ -37,4 +37,44 @@ public class TaskService {
         this.tasks.addAll(tasks);
         Logger.log("TaskService: Aufgabenliste neu gesetzt. Anzahl Aufgaben: " + tasks.size());
     }
+
+    public List<Task> searchByTitle(String title) {
+        List<Task> result = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getTitle().toLowerCase().contains(title.toLowerCase())) {
+                result.add(task);
+            }
+        }
+        return result;
+    }
+
+    public List<Task> searchByDescription(String description) {
+        List<Task> result = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(description.toLowerCase())) {
+                result.add(task);
+            }
+        }
+        return result;
+    }
+
+    public List<Task> filterByCategory(String category) {
+        List<Task> result = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getCategory().equalsIgnoreCase(category)) {
+                result.add(task);
+            }
+        }
+        return result;
+    }
+
+    public List<Task> filterByPriority(int priority) {
+        List<Task> result = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getPriority() == priority) {
+                result.add(task);
+            }
+        }
+        return result;
+    }
 }
