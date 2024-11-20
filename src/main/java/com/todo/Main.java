@@ -6,6 +6,8 @@ import com.todo.service.TaskService;
 import com.todo.storage.FileStorage;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -13,14 +15,22 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+    private static final String PASSWORD_FILE = "password.txt";
+    private static String password = "default";
+
     public static void main(String[] args) throws IOException {
+        loadPassword();
+
+        Logger.log("Benutzer erfolgreich authentifiziert.");
         TaskService taskService = new TaskService();
         FileStorage fileStorage = new FileStorage();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         try (Scanner scanner = new Scanner(System.in)) {
+            if (!authenticateUser(scanner)) {
+                return;
+            }
             while (true) {
-                Logger.log("Programm gestartet.");
                 System.out.println("\n=====================================");
                 System.out.println("           ToDo Liste");
                 System.out.println("=====================================");
@@ -30,8 +40,9 @@ public class Main {
                 System.out.println("4. Aufgabe löschen");
                 System.out.println("5. Aufgaben speichern");
                 System.out.println("6. Aufgaben laden");
-                System.out.println("7. Beenden");
+                System.out.println("7. Passwort ändern");
                 System.out.println("8. Aufgaben suchen und filtern");
+                System.out.println("9. Beenden");
                 System.out.println("=====================================");
                 System.out.print("Wähle eine Option: ");
 
@@ -159,10 +170,9 @@ public class Main {
                         break;
 
                     case 7:
-                        Logger.log("Programm beendet.");
-                        System.out.println("Beenden...");
-                        System.out.println("=====================================");
-                        return;
+                        changePassword(scanner);
+                        break;
+
                     case 8:
                         System.out.println("Suche und Filter - Wählen Sie ein Kriterium:");
                         System.out.println("1. Nach Titel suchen");
@@ -211,11 +221,81 @@ public class Main {
                         Logger.log("Aufgaben gefiltert: " + (filteredTasks != null ? filteredTasks.size() : 0)
                                 + " Ergebnisse");
                         break;
+
+                    case 9:
+                        Logger.log("Programm beendet.");
+                        System.out.println("Beenden...");
+                        return;
+
                     default:
                         System.out.println("Ungültige Auswahl. Bitte erneut versuchen!");
                 }
                 System.out.println("-------------------------------------");
             }
         }
+    }
+
+    private static void loadPassword() {
+        try {
+            if (Files.exists(Paths.get(PASSWORD_FILE))) {
+                password = new String(Files.readAllBytes(Paths.get(PASSWORD_FILE))).trim();
+            } else {
+                savePassword(password);
+            }
+        } catch (IOException e) {
+            System.err.println("Fehler beim Laden des Passworts: " + e.getMessage());
+            Logger.log("Fehler beim Laden des Passworts.");
+        }
+    }
+
+    private static void savePassword(String newPassword) {
+        try {
+            Files.write(Paths.get(PASSWORD_FILE), newPassword.getBytes());
+            Logger.log("Passwort geändert.");
+        } catch (IOException e) {
+            System.err.println("Fehler beim Speichern des Passworts: " + e.getMessage());
+            Logger.log("Fehler beim Speichern des Passworts.");
+        }
+    }
+
+    private static boolean authenticateUser(Scanner scanner) {
+        System.out.print("Passwort eingeben: ");
+        if (scanner.hasNextLine()) {
+            String userInput = scanner.nextLine();
+            if (password.equals(userInput)) {
+                Logger.log("Authentifizierung erfolgreich.");
+                return true;
+            }
+        }
+        Logger.log("Authentifizierung fehlgeschlagen. Falsches Passwort eingegeben.");
+        System.out.println("Falsches Passwort. Programm wird beendet.");
+        return false;
+    }
+
+    private static void changePassword(Scanner scanner) {
+        System.out.print("Altes Passwort eingeben: ");
+        String oldPassword = scanner.nextLine();
+
+        if (!password.equals(oldPassword)) {
+            System.out.println("Falsches Passwort. Passwortänderung abgebrochen.");
+            Logger.log("Passwortänderung fehlgeschlagen: falsches Passwort.");
+            return;
+        }
+
+        System.out.print("Neues Passwort eingeben: ");
+        String newPassword = scanner.nextLine();
+        System.out.print("Neues Passwort bestätigen: ");
+        String confirmPassword = scanner.nextLine();
+
+        if (!newPassword.equals(confirmPassword)) {
+            System.out.println("Passwörter stimmen nicht überein. Passwortänderung abgebrochen.");
+            Logger.log("Passwortänderung fehlgeschlagen: Bestätigung stimmt nicht überein.");
+            return;
+        }
+
+        password = newPassword;
+        savePassword(password);
+        System.out.println("Passwort erfolgreich geändert.");
+        Logger.log("Passwort erfolgreich geändert.");
     }
 }
