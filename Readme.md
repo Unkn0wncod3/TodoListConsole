@@ -14,6 +14,11 @@ A console based task manager with password protected access, recurring task help
 - Import and export the task list as CSV for backup or migration.
 - Maintain an activity log in `todo-log.txt` for auditing actions taken in the console.
 
+## Screenshots
+![Main menu](./1.png)
+![Task details](./2.png)
+![CSV import/export workflow](./3.png)
+
 ## Getting Started
 
 ### Prerequisites
