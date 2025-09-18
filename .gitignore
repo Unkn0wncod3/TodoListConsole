@@ -32,4 +32,5 @@ surefire-reports/
 .mvn/
 
 *.txt
+!password.txt
 *.csv
